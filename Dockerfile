@@ -4,9 +4,7 @@ ENV SSL_PORT=443
 
 RUN apk add --no-cache nginx openssl gettext
 
-ADD add_self_signed_certs.sh /
-ADD nginx.conf.template /
-ADD configure_nginx.sh /
+ADD add_self_signed_certs.sh nginx.conf.template configure_nginx.sh v3.ext /
 
 EXPOSE ${SSL_PORT}
 

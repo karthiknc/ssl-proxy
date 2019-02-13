@@ -1,20 +1,24 @@
 #!/bin/sh -e
 
 DOMAIN=${DOMAIN:-www.example.com}
-OUTPUT_DIR=/etc/nginx/certs
-CA_DIR=/etc/nginx/ca
+CERT_DIR=/etc/nginx/certs
+V3_DIR=/etc/nginx/certs/
 
-mkdir -p $OUTPUT_DIR $CA_DIR
-
-# Generate the root CA if it doesn't exist
-if [ ! -f ${CA_DIR}/rootCA.crt ]; then
-	openssl genrsa -out ${CA_DIR}/rootCA.key 2048
-	openssl req -x509 -new -nodes -key ${CA_DIR}/rootCA.key -sha256 -days 1024 -subj "/C=US/ST=Denial/L=Springfield/O=DisRoot/CN=CompanyRoot" -out ${CA_DIR}/rootCA.crt
+if [ ! -f ${CERT_DIR}/v3.ext ]; then
+	V3_DIR=/
 fi
 
-if [ ! -f ${OUTPUT_DIR}/key.pem ]; then
+mkdir -p $CERT_DIR
+
+# Generate the root CA if it doesn't exist
+if [ ! -f ${CERT_DIR}/rootCA.crt ]; then
+	openssl genrsa -out ${CERT_DIR}/rootCA.key 2048
+	openssl req -x509 -new -nodes -key ${CERT_DIR}/rootCA.key -sha256 -days 1024 -subj "/C=IN/ST=Bengaluru/L=ECity/O=News/CN=ecslocal" -out ${CERT_DIR}/rootCA.crt
+fi
+
+if [ ! -f ${CERT_DIR}/key.pem ]; then
     # Generate the certificate
-    openssl genrsa -out ${OUTPUT_DIR}/key.pem 2048
-    openssl req -new -sha256 -key ${OUTPUT_DIR}/key.pem -nodes -subj "/C=US/ST=Denial/L=Springfield/O=Dis/CN=${DOMAIN}" -out ${OUTPUT_DIR}/csr.pem
-    openssl x509 -req -in ${OUTPUT_DIR}/csr.pem -CA ${CA_DIR}/rootCA.crt -CAkey ${CA_DIR}/rootCA.key -CAcreateserial -out ${OUTPUT_DIR}/cert.pem
+    openssl genrsa -out ${CERT_DIR}/key.pem 2048
+    openssl req -new -sha256 -key ${CERT_DIR}/key.pem -nodes -subj "/C=IN/ST=Bengaluru/L=ECity/O=NTS/CN=${DOMAIN}" -out ${CERT_DIR}/csr.pem
+    openssl x509 -req -in ${CERT_DIR}/csr.pem -CA ${CERT_DIR}/rootCA.crt -CAkey ${CERT_DIR}/rootCA.key -CAcreateserial -out ${CERT_DIR}/cert.pem -sha256 -extfile ${V3_DIR}v3.ext
 fi
